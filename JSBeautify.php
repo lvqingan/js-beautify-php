@@ -37,9 +37,9 @@ class JSBeautify
     private $indentLevel;
 
     private $doBlockJustClosed;
-    private $output;
+    private $output = '';
     private $input;
-    private $modes;
+    private $modes = [];
     private $currentMode;
     private $ifLineFlag;
 
@@ -93,10 +93,6 @@ class JSBeautify
             'indent_level'      => $options['indent_level'] ?? 0,
             'preserve_newlines' => $options['preserve_newlines'] ?? true,
         ];
-
-
-        $this->output = '';
-        $this->modes = [];
 
         $this->indentString = str_repeat($this->options['indent_char'], $this->options['indent_size']);
         $this->indentLevel = $this->options['indent_level'];
@@ -522,7 +518,7 @@ class JSBeautify
             }
         }
 
-        if ($c == '\'' || $c == '"' || ($c == '/' && ($this->lastType == 'TK_WORD' && $this->lastText == 'return') || in_array($this->lastType, ['TK_START_EXPR', 'TK_START_BLOCK', 'TK_END_BLOCK', 'TK_OPERATOR', 'TK_EOF', 'TK_SEMICOLON']))) {
+        if ($c == "'" || $c == '"' || ($c == '/' && (($this->lastType == 'TK_WORD' && $this->lastText == 'return') || in_array($this->lastType, ['TK_START_EXPR', 'TK_START_BLOCK', 'TK_END_BLOCK', 'TK_OPERATOR', 'TK_EOF', 'TK_SEMICOLON'])))) {
             $sep = $c;
             $esc = false;
             $resultingString = $c;
