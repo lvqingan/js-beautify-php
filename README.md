@@ -4,7 +4,9 @@
 $obj = new JSBeautify('function(){alert("foo");}');
 echo $obj->getResult();
 ```
-to output will be
+
+the output will be
+
 ```
 function () {
     alert("foo");
