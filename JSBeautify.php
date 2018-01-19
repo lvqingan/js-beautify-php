@@ -1,4 +1,6 @@
 <?php
+namespace FineUI\Lib;
+
 /*
  * This file is part of the FineUI package.
  *
@@ -100,7 +102,7 @@ class JSBeautify
         $this->input = str_replace('</script>', '', str_replace('<script type="text/javascript">', '', $sourceText));
 
         // 源代码包含了<script>标签
-        if (mb_strlen($this->input) != mb_strlen($sourceText)) {
+        if (strlen($this->input) != strlen($sourceText)) {
             $this->output .= '<script type="text/javascript">';
             $this->addScriptTags = true;
         }
@@ -226,7 +228,7 @@ class JSBeautify
                     }
 
                     if ($this->lastType != 'TK_END_BLOCK' && in_array(strtolower($this->tokenText), ['else', 'catch', 'finally'])) {
-                       $this->printNewLine(null);
+                        $this->printNewLine(null);
                     } else if (in_array($this->tokenText, $this->lineStarters) || $this->prefix == 'NEWLINE') {
                         if ($this->lastText == 'else') {
                             $this->printSpace();
@@ -236,11 +238,11 @@ class JSBeautify
                             $this->printSpace();
                         } else if ($this->lastType != 'TK_END_EXPR') {
                             if (($this->lastType != 'TK_START_EXPR' || $this->tokenText != 'var') && $this->lastText != ':') {
-                               if ($this->tokenText == 'if' && $this->lastType == 'TK_WORD' && $this->lastWord == 'else') {
-                                   $this->printSpace();
-                               } else {
-                                   $this->printNewLine(null);
-                               }
+                                if ($this->tokenText == 'if' && $this->lastType == 'TK_WORD' && $this->lastWord == 'else') {
+                                    $this->printSpace();
+                                } else {
+                                    $this->printNewLine(null);
+                                }
                             }
                         } else {
                             if (in_array($this->tokenText, $this->lineStarters) && $this->lastText != ')') {
@@ -396,15 +398,15 @@ class JSBeautify
     {
         $newLines = 0;
 
-        if ($parserPos >= mb_strlen($this->input)) {
+        if ($parserPos >= strlen($this->input)) {
             return ['', 'TK_EOF'];
         }
 
         $c = $this->getInputChar($parserPos);
         $parserPos++;
 
-        while (mb_strpos($this->whitespace, $c) !== false) {
-            if ($parserPos >= mb_strlen($this->input)) {
+        while (strpos($this->whitespace, $c) !== false) {
+            if ($parserPos >= strlen($this->input)) {
                 return ['', 'TK_EOF'];
             }
 
@@ -427,18 +429,18 @@ class JSBeautify
             $wantNewLine = ($newLines == 1);
         }
 
-        if (mb_strpos($this->wordchar, $c) !== false) {
-            if ($parserPos < mb_strlen($this->input)) {
-                while (mb_strpos($this->wordchar, $this->getInputChar($parserPos)) !== false) {
+        if (strpos($this->wordchar, $c) !== false) {
+            if ($parserPos < strlen($this->input)) {
+                while (strpos($this->wordchar, $this->getInputChar($parserPos)) !== false) {
                     $c .= $this->getInputChar($parserPos);
                     $parserPos++;
-                    if ($parserPos == mb_strlen($this->input)) {
+                    if ($parserPos == strlen($this->input)) {
                         break;
                     }
                 }
             }
 
-            if ($parserPos != mb_strlen($this->input) && preg_match('/^[0-9]+[Ee]$/', $c) && ($this->getInputChar($parserPos) == '-' || $this->getInputChar($parserPos) == '+')) {
+            if ($parserPos != strlen($this->input) && preg_match('/^[0-9]+[Ee]$/', $c) && ($this->getInputChar($parserPos) == '-' || $this->getInputChar($parserPos) == '+')) {
                 $sign = $this->getInputChar($parserPos);
                 $parserPos++;
 
@@ -483,11 +485,11 @@ class JSBeautify
             $comment = '';
             if ($this->getInputChar($parserPos) == '*') {
                 $parserPos++;
-                if ($parserPos < mb_strlen($this->input)) {
-                    while (! ($this->getInputChar($parserPos) == '*' && $this->getInputChar($parserPos + 1) > "\0" && $this->getInputChar($parserPos + 1) == '/' && $parserPos < mb_strlen($this->input))) {
+                if ($parserPos < strlen($this->input)) {
+                    while (! ($this->getInputChar($parserPos) == '*' && $this->getInputChar($parserPos + 1) > "\0" && $this->getInputChar($parserPos + 1) == '/' && $parserPos < strlen($this->input))) {
                         $comment .= $this->getInputChar($parserPos);
                         $parserPos++;
-                        if ($parserPos >= mb_strlen($this->input)) {
+                        if ($parserPos >= strlen($this->input)) {
                             break;
                         }
                     }
@@ -505,7 +507,7 @@ class JSBeautify
                     $comment .= $this->getInputChar($parserPos);
                     $parserPos++;
 
-                    if ($parserPos >= mb_strlen($this->input)) {
+                    if ($parserPos >= strlen($this->input)) {
                         break;
                     }
                 }
@@ -523,7 +525,7 @@ class JSBeautify
             $esc = false;
             $resultingString = $c;
 
-            if ($parserPos < mb_strlen($this->input)) {
+            if ($parserPos < strlen($this->input)) {
                 if ($sep == '/') {
                     $inCharClass = false;
                     while ($esc || $inCharClass || $this->getInputChar($parserPos) != $sep) {
@@ -542,7 +544,7 @@ class JSBeautify
 
                         $parserPos++;
 
-                        if ($parserPos >= mb_strlen($this->input)) {
+                        if ($parserPos >= strlen($this->input)) {
                             return [$resultingString, 'TK_STRING'];
                         }
                     }
@@ -557,7 +559,7 @@ class JSBeautify
                         }
 
                         $parserPos++;
-                        if ($parserPos >= mb_strlen($this->input)) {
+                        if ($parserPos >= strlen($this->input)) {
                             return [$resultingString, 'TK_STRING'];
                         }
                     }
@@ -569,7 +571,7 @@ class JSBeautify
             $resultingString .= $sep;
 
             if ($sep == '/') {
-                while ($parserPos < mb_strlen($this->input) && mb_strpos($this->wordchar, $this->getInputChar($parserPos)) !== false) {
+                while ($parserPos < strlen($this->input) && strpos($this->wordchar, $this->getInputChar($parserPos)) !== false) {
                     $resultingString .= $this->getInputChar($parserPos);
                     $parserPos += 1;
                 }
@@ -581,12 +583,12 @@ class JSBeautify
         if ($c == '#') {
             $sharp = '#';
 
-            if ($parserPos < mb_strlen($this->input) && mb_strpos($this->digits, $this->getInputChar($parserPos)) !== false) {
+            if ($parserPos < strlen($this->input) && strpos($this->digits, $this->getInputChar($parserPos)) !== false) {
                 do {
                     $c = $this->getInputChar($parserPos);
                     $sharp .= $c;
                     $parserPos += 1;
-                } while ($parserPos < mb_strlen($this->input) && $c != '#' && $c != '=');
+                } while ($parserPos < strlen($this->input) && $c != '#' && $c != '=');
 
                 if ($c == '#') {
                     return [$sharp, 'TK_WORD'];
@@ -596,13 +598,13 @@ class JSBeautify
             }
         }
 
-        if ($c == '<' && mb_substr($this->input, $parserPos - 1, 3) == '<!--') {
+        if ($c == '<' && substr($this->input, $parserPos - 1, 3) == '<!--') {
             $parserPos += 3;
 
             return ['<!--', 'TK_COMMENT'];
         }
 
-        if ($c == '-' && mb_substr($this->input, $parserPos - 1, 2) == '-->') {
+        if ($c == '-' && substr($this->input, $parserPos - 1, 2) == '-->') {
             $parserPos += 2;
             if ($wantNewLine) {
                 $this->printNewLine(null);
@@ -612,10 +614,10 @@ class JSBeautify
         }
 
         if (in_array($c, $this->punct)) {
-            while ($parserPos < mb_strlen($this->input) && in_array($c . $this->getInputChar($parserPos), $this->punct)) {
+            while ($parserPos < strlen($this->input) && in_array($c . $this->getInputChar($parserPos), $this->punct)) {
                 $c .= $this->getInputChar($parserPos);
                 $parserPos += 1;
-                if ($parserPos >= mb_strlen($this->input)) {
+                if ($parserPos >= strlen($this->input)) {
                     break;
                 }
             }
@@ -637,19 +639,19 @@ class JSBeautify
 
     private function trimOutput()
     {
-        while (mb_strlen($this->output) > 0 && ($this->getOutputChar(mb_strlen($this->output) - 1) == ' ' || $this->getOutputChar(mb_strlen($this->output) - 1) == $this->indentString)) {
-            $this->output = mb_substr_replace($this->output, '', mb_strlen($this->output) - 1, 1);
+        while (strlen($this->output) > 0 && ($this->getOutputChar(strlen($this->output) - 1) == ' ' || $this->getOutputChar(strlen($this->output) - 1) == $this->indentString)) {
+            $this->output = substr_replace($this->output, '', strlen($this->output) - 1, 1);
         }
     }
 
     private function getOutputChar($index)
     {
-        return mb_substr($this->output, $index, 1);
+        return substr($this->output, $index, 1);
     }
 
     private function getInputChar($index)
     {
-        return mb_substr($this->input, $index, 1);
+        return substr($this->input, $index, 1);
     }
 
     private function printNewLine($ignoreRepeated = null)
@@ -657,11 +659,11 @@ class JSBeautify
         $this->ifLineFlag = false;
         $this->trimOutput();
 
-        if (mb_strlen($this->output) == 0) {
+        if (strlen($this->output) == 0) {
             return;
         }
 
-        if ($this->getOutputChar(mb_strlen($this->output) - 1) != "\n" || ! $ignoreRepeated) {
+        if ($this->getOutputChar(strlen($this->output) - 1) != "\n" || ! $ignoreRepeated) {
             $this->output .= PHP_EOL;
         }
 
@@ -673,8 +675,8 @@ class JSBeautify
     private function printSpace()
     {
         $lastOutput = ' ';
-        if (mb_strlen($this->output) > 0) {
-            $lastOutput = $this->getOutputChar(mb_strlen($this->output) - 1);
+        if (strlen($this->output) > 0) {
+            $lastOutput = $this->getOutputChar(strlen($this->output) - 1);
         }
 
         if ($lastOutput != ' ' && $lastOutput != "\n" && $lastOutput != $this->indentString) {
@@ -701,8 +703,8 @@ class JSBeautify
 
     private function removeIndent()
     {
-        if (mb_strlen($this->output) > 0 && $this->getOutputChar(mb_strlen($this->output) - 1) == $this->indentString) {
-            $this->output = mb_substr_replace($this->output, '', mb_strlen($this->output) - 1, 1);
+        if (strlen($this->output) > 0 && $this->getOutputChar(strlen($this->output) - 1) == $this->indentString) {
+            $this->output = substr_replace($this->output, '', strlen($this->output) - 1, 1);
         }
     }
 
@@ -723,7 +725,7 @@ class JSBeautify
         $level = 0;
         $colonCount = 0;
 
-        for ($i = mb_strlen($this->output) - 1; $i >= 0; $i--) {
+        for ($i = strlen($this->output) - 1; $i >= 0; $i--) {
             switch ($this->getOutputChar($i)) {
                 case ':':
                     if ($level == 0) {
@@ -757,50 +759,5 @@ class JSBeautify
             }
         }
         return false;
-    }
-}
-
-if (function_exists('mb_substr_replace') === false)
-{
-    function mb_substr_replace($string, $replacement, $start, $length = null, $encoding = null)
-    {
-        if (extension_loaded('mbstring') === true)
-        {
-            $string_length = (is_null($encoding) === true) ? mb_strlen($string) : mb_strlen($string, $encoding);
-
-            if ($start < 0)
-            {
-                $start = max(0, $string_length + $start);
-            }
-
-            else if ($start > $string_length)
-            {
-                $start = $string_length;
-            }
-
-            if ($length < 0)
-            {
-                $length = max(0, $string_length - $start + $length);
-            }
-
-            else if ((is_null($length) === true) || ($length > $string_length))
-            {
-                $length = $string_length;
-            }
-
-            if (($start + $length) > $string_length)
-            {
-                $length = $string_length - $start;
-            }
-
-            if (is_null($encoding) === true)
-            {
-                return mb_substr($string, 0, $start) . $replacement . mb_substr($string, $start + $length, $string_length - $start - $length);
-            }
-
-            return mb_substr($string, 0, $start, $encoding) . $replacement . mb_substr($string, $start + $length, $string_length - $start - $length, $encoding);
-        }
-
-        return (is_null($length) === true) ? substr_replace($string, $replacement, $start) : substr_replace($string, $replacement, $start, $length);
     }
 }
