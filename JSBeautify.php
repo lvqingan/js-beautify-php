@@ -1,12 +1,4 @@
 <?php
-namespace FineUI\Lib;
-
-/*
- * This file is part of the FineUI package.
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 class JSBeautify
 {
