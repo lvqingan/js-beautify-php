@@ -68,16 +68,18 @@ class JSBeautify
      */
     private $lineStarters = [];
     private $prefix;
+
     public function __construct($sourceText, $options = [])
     {
         $this->options = [
             'indent_size'       => $options['indent_size'] ?? 4,
             'indent_char'       => $options['indent_char'] ?? ' ',
             'indent_level'      => $options['indent_level'] ?? 0,
-            'preserve_newlines' => $options['preserve_newlines'] ?? true,
+            'preserve_newlines' => $options['preserve_newlines'] ?? false,
         ];
         $this->indentString = str_repeat($this->options['indent_char'], $this->options['indent_size']);
         $this->indentLevel = $this->options['indent_level'];
+
         $this->input = str_replace('</script>', '', str_replace('<script type="text/javascript">', '', $sourceText));
         // 源代码包含了<script>标签
         if (strlen($this->input) != strlen($sourceText)) {
@@ -93,7 +95,7 @@ class JSBeautify
         $this->varLine = false;
         $this->varLineTainted = false;
         $this->punct = explode(' ', '+ - * / % & ++ -- = += -= *= /= %= == === != !== > < >= <= >> << >>> >>>= >>= <<= && &= | || ! !! , : ? ^ ^= |= ::');
-        $this->lineStarters = explode(',', 'continue,try,throw,return,var,if,switch,case,default,for,while,break,function');
+        $this->lineStarters = explode(',', 'continue,try,throw,return,var,if,switch,case,default,for,while,break');
         $this->currentMode = 'BLOCK';
         $this->modes[] = $this->currentMode;
         $this->parserPos = 0;
@@ -342,6 +344,12 @@ class JSBeautify
                     break;
                 case 'TK_UNKNOWN':
                     if ($this->lastText != $this->tokenText) {
+                        if (
+                            $this->lastType == 'TK_SEMICOLON'
+                            || $this->lastType == 'TK_START_BLOCK'
+                        ) {
+                            $this->printNewLine();
+                        }
                         $this->printToken();
                     }
                     break;
@@ -449,14 +457,15 @@ class JSBeautify
                 return [$comment, 'TK_COMMENT'];
             }
         }
-        if (
-            $c == '$'
-            && $parserPos < strlen($this->input)
-            && $this->getInputChar($parserPos) == '('
-        ) {
-            $c = '$(';
-            $parserPos++;
-            return [$c, 'TK_START_EXPR'];
+        if ($c == '$') {
+            if ($this->lastType == 'TK_END_BLOCK') {
+                $this->printNewLine();
+            }
+            $d = $parserPos < strlen($this->input) ? $this->getInputChar($parserPos) : null;
+            if ($d == '(' || $this->getInputChar($parserPos) == '.') {
+                $parserPos++;
+                return [$c . $d, 'TK_START_EXPR'];
+            }
         }
         if (
             $c == "'"
@@ -566,6 +575,7 @@ class JSBeautify
         }
         return $this->output;
     }
+
     private function trimOutput()
     {
         while (strlen($this->output) > 0 && ($this->getOutputChar(strlen($this->output) - 1) == ' ' || $this->getOutputChar(strlen($this->output) - 1) == $this->indentString)) {
