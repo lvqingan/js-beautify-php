@@ -1,5 +1,4 @@
 <?php
-namespace Encore\Admin;
 
 class JSBeautify
 {
